@@ -8,7 +8,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
 
 ## Update
 April 5:
-- Sage Journal
+- Sage Journal (create customized link)
   - can scrape search results with multiple pages
   - can search keywords with space or hyphen
   - fixed abstract link extraction; now it detects abstract link from the following options in order:
@@ -18,7 +18,8 @@ April 5:
   - fixed info extraction situiation when the number of search result is 0
   - added printed process info
   - close connections after scrapping a webpage
-  - examples tested:
+  - created simple tf_idf score to rank the articles but haven't tested and validated yet
+  - examples tested:
 ```
 keywordsA <- c("defaults","default effect","advance directives","opt-out")
 keywordsB <- c("decisions","decision-making","consumer behavior")
@@ -28,7 +29,11 @@ maxsize <- 100
 databasename <- 'sage journal'
 data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
 ```
-
+- Science Direct (submit search form)
+  - as the url is got from the feedback of search form submission, it can naturally handle keywords with space or hyphen
+  - can scrape only the first page (maxsize = 200) <-- not sure if it can be adapted to multiple pages
+  - can scrape multiple pages using the default maxsize (25), which involves creating new session by submitting 'Next >>'
+  - 2 types info are recorded: title, author, abstract, link
 
 April 3:
 - turned the script into a function
