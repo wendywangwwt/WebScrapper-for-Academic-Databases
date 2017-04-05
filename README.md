@@ -33,7 +33,7 @@ data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
   - as the url is got from the feedback of search form submission, it can naturally handle keywords with space or hyphen
   - can scrape only the first page (maxsize = 200) <-- not sure if it can be adapted to multiple pages
   - can scrape multiple pages using the default maxsize (25), which involves creating new session by submitting 'Next >>'
-  - 2 types info are recorded: title, author, abstract, link
+  - 2 types info are recorded: title, author
 
 April 3:
 - turned the script into a function
