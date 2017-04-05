@@ -7,10 +7,24 @@ Getting papers for meta analysis is always annoying: you need to try various com
 I'm starting to create a web scrapper for academic databases in R in the form of a (set of) function.
 
 ## Update
+April 5:
+- Sage Journal
+  - can scrape search results with multiple pages
+  - can search keywords with space or hyphen
+  - fixed abstract link extraction; now it detects abstract link from the following options in order:
+    - 'show abstract'
+    - the first icon (usually icon 'abstract' but sometimes will be icon 'pdf')
+    - the second icon (when there is no abstract and the first icon is not abstract, the second icon is possibly 'translated abstracts available' <-- although it may not direct you to a traslated abstract lol)
+  - fixed info extraction situiation when the number of search result is 0
+  - added printed process info
+  - close connections after scrapping a webpage
+
+
+
 April 3:
 - turned the script into a function
 - the function now works for sage journal with keywordA = "default" and keywordB = "decisions"
-- 4 types of infor are recorded: title, author, abstract, link
+- 4 types of info are recorded: title, author, abstract, link
 - next steps:
   - adapt to search term with space or hyphen
   - adapt to search result with multiple pages
