@@ -18,13 +18,23 @@ April 5:
   - fixed info extraction situiation when the number of search result is 0
   - added printed process info
   - close connections after scrapping a webpage
-
+  - examples tested:
+```
+keywordsA <- c("defaults","default effect","advance directives","opt-out")
+keywordsB <- c("decisions","decision-making","consumer behavior")
+area <- "abstract"
+area <- 'abstract'
+maxsize <- 100
+databasename <- 'sage journal'
+data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
+```
 
 
 April 3:
 - turned the script into a function
-- the function now works for sage journal with keywordA = "default" and keywordB = "decisions"
 - 4 types of info are recorded: title, author, abstract, link
+- examples tested
+  - sage journal: keywordA = "default" and keywordB = "decisions"
 - next steps:
   - adapt to search term with space or hyphen
   - adapt to search result with multiple pages
