@@ -7,6 +7,27 @@ Getting papers for meta analysis is always annoying: you need to try various com
 I'm starting to create a web scrapper for academic databases in R in the form of a (set of) function.
 
 ## Update
+April 6:
+- Science Direct (submit search form)
+  - 4 types of info are collected: title, author, abstract , link
+
+- Overall
+  - can search and collect data from multiple databases
+  - examples tested:
+ ```
+keywordsA <- c('defaults','default effect')
+keywordsB <- c('decisions','psychology')
+area <- 'abstract'
+maxsize <- c(100,0)
+databasename <- c('sage journal','science direct')
+
+data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
+```
+
+- Bug
+  - when using form submission, it's not clear how to mark checkboxes (form$fields$checkbox$checked <- 'checked' doesn't work). As the function scrapes Science Direct by submitting the search form, scraping the data on the page, and clicking the 'next' button, there is some problem with the result: the result from Science Direct only contains the search result which has 'open access' marked (the default), while the full result should also contain search result that has 'subscribed journals' marked.
+
+
 April 5:
 - Sage Journal (create customized link)
   - can scrape search results with multiple pages
