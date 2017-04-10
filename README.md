@@ -6,7 +6,42 @@ Getting papers for meta analysis is always annoying: you need to try various com
 ## What I try to do
 I'm starting to create a web scrapper for academic databases in R in the form of a (set of) function.
 
-## Update
+## Update Summary
+### April 3 ~ April 7
+- Scrape databases
+
+  - Sage Journal
+    - approach to get the page: merge needed arguments into a href link (having an argument to change page)
+    - approach to filter out info: xpath
+    - 4 types of info are collected: title, author, abstract, link
+    - no bug till now, can handle paper without abstraction listed
+    - the only problem is it runs slow (searching for the 4 keywords in group A and 3 keywords in group B (12 pairs in total, as Shannon listed) takes about 40 or 50 minutes).. currently I have no plan to optimize the code since you can run the function and put it aside for hours.
+
+  - Science Direct
+    - approach to get the page: fill the advanced search form and submit the form (will get a session back) to get the link for the first page, then click 'next' (which is in the form of a submit input) to get the session of next page; iterate until all the pages are collected
+    - approach to filter out info: css selector
+    - 4 types of info are collected: title, author, abstract, link
+    - bug 1: need to match absence of abstract with the correct paper. Using css selector I can filter out the needed information as a whole (for example, just one line of code can give all the titles on the page); however, there is some rare case that the paper doesn't have an abstract link on the search result page and article page so that I cannot get its abstract (e.g., http://www.sciencedirect.com/science/article/pii/S0160252715000989). In that case, the result of css selector cannot tell which article doesn't have the abstract as the information is not collect one article by one article (and that's why this is not a problem in Sage Journal's case -- there I use xpath to collect information one by one). *I will correct it soon.*
+    - bug 2: need to mark the checkbox for full range of search result. In order to overcome the lack of page argument, I submit the filled form to get the first session. The rvest package currently cannot handle checkbox status and currently the default is to search open access articles ONLY (we also need to search subscribed journals); I tried to directly modify the returned form object instead of using rvest::set_values() by myself but it didn't work (other parts like drop down menu can be set in this way successfully). I sent an email to the author of rvest package and hopefully he could reply me soon. If he didn't reply me by Monday I will try to change the approach to create the first link manually by code and then create the session to click 'next' button.
+
+  - PubMed
+    - approach to get the page and filter out info: API. PubMed can hardly be web scrapped; its link does not consist arguments like keywords or fields; although it accepts link with argument of keywords and fields, I cannot figure out if there is an argument for page change (even the POST links recorded by the interceptor doesn't contain useful information on arguments), and the 'next' button is not in a form of input submit so I cannot treat it like a form. Then I found it provides an API... feel like I'm a fool lol. I checked the API, and it's easy to use merged links to retrieve data and get the link for next page so it will work.
+    - will start to do it next week.
+
+
+- Rank or filter the result
+
+  - tf-idf
+    - tf-idf was tried on the result of Sage Journal (using the 2 groups of keywords listed by Shannon) to rank or score the relatedness or keyword importance of the articles using their abstract. It's calculated on unigram (single word) while some of our keywords are bigram (e.g., consumer behavior), I'm considering to add some constraints on the score and rank them again (e.g., the socre of 'consumer' and that of 'behavior' is meaningful only when both of them occur in the abstract).
+
+  - Latent Dirichlet Allocation
+    - I'm also considering to use this common topic modeling method to model the topic of the abstracts and see if it can help.
+
+  - Doc2Vec neural network
+    - a novel way to cluster documents. I may try it in the summer:p
+    
+    
+## Update Details
 April 6:
 - Science Direct (submit search form)
   - 4 types of info are collected: title, author, abstract , link
