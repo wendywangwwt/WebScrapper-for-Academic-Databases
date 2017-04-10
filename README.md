@@ -42,6 +42,12 @@ I'm starting to create a web scrapper for academic databases in R in the form of
     
     
 ## Update Details
+April 10:
+- Science Direct
+  - fixed no abstract situation
+  - in addtion to closeallconnections(), download a html file first then read and scrape it, in order to avoid 'time reachout' error
+
+
 April 6:
 - Science Direct (submit search form)
   - 4 types of info are collected: title, author, abstract , link
