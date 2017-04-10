@@ -5,6 +5,127 @@ library(tidyverse)
 library(stringr)
 
 
+#########################
+# function
+##################
+
+# set_values <- function(form, ...) {
+#   new_values <- list(...)
+#   
+#   # check for valid names
+#   no_match <- setdiff(names(new_values), names(form$fields))
+#   if (length(no_match) > 0) {
+#     stop("Unknown field names: ", paste(no_match, collapse = ", "),
+#          call. = FALSE)
+#   }
+#   
+#   for (field in unique(names(new_values))) {
+#     type <- form$fields[[field]]$type %||% "non-input"
+#     if (type == "hidden") {
+#       warning("Setting value of hidden field '", field, "'.", call. = FALSE)
+#     } else if (type == "submit") {
+#       stop("Can't change value of submit input '", field, "'.", call. = FALSE)
+#     }
+#     
+#     if (type == "checkbox") {
+#       # there could be multiple check boxes with same 'name's and different 'value's
+#       idx <- unlist(names(new_values) == field)
+#       form <- set_checkbox(form, new_values[idx])
+#     } else if (type == "radio") {
+#       # there could be multiple radio buttons with same 'name's and different 'value's
+#       idx <- unlist(names(new_values) == field)
+#       form <- set_radio(form, new_values[idx])
+#     } else {
+#       form$fields[[field]]$value <- new_values[[field]]
+#     }
+#   }
+#   
+#   form
+#   
+# }
+# 
+# set_checkbox <- function(form, values) {
+#   idx <- which(unlist(lapply(form$fields, function(x) { x$name %in% values })))
+#   
+#   for (i in unname(idx)) {
+#     if (!is.null(form$fields[[i]]$value) && (form$fields[[i]]$value %in% values))
+#       form$fields[[i]]$checked <- "checked"
+#   }
+#   return(form)
+# }
+# 
+# set_radio <- function(form, values) {
+#   idx <- which(unlist(lapply(form$fields, function(x) { x$name %in% names(values) })))
+#   
+#   for (i in unname(idx)) {
+#     if (!is.null(form$fields[[i]]$value)) {
+#       if (form$fields[[i]]$value %in% values)
+#         form$fields[[i]]$checked <- "true"
+#       else
+#         form$fields[[i]]$checked <- "false"
+#     }
+#   }
+#   return(form)
+# }
+# 
+# submit_form <- function(session, form, submit = NULL, ...) {
+#   request <- submit_request(form, submit)
+#   url <- xml2::url_absolute(form$url, session$url)
+#   
+#   # Make request
+#   if (request$method == "GET") {
+#     request_GET(session, url = url, query = request$values, ...)
+#   } else if (request$method == "POST") {
+#     request_POST(session, url = url, body = request$values,
+#                  encode = request$encode, ...)
+#   } else {
+#     stop("Unknown method: ", request$method, call. = FALSE)
+#   }
+# }
+# 
+# submit_request <- function(form, submit = NULL) {
+#   submits <- Filter(function(x) {
+#     identical(tolower(x$type), "submit") | identical(tolower(x$type), "image")
+#   }, form$fields)
+#   if (is.null(submit)) {
+#     submit <- names(submits)[[1]]
+#     message("Submitting with '", submit, "'")
+#   }
+#   if (!(submit %in% names(submits))) {
+#     stop(
+#       "Unknown submission name '", submit, "'.\n",
+#       "Possible values: ", paste0(names(submits), collapse = ", "),
+#       call. = FALSE
+#     )
+#   }
+#   other_submits <- setdiff(names(submits), submit)
+#   
+#   # Parameters needed for http request -----------------------------------------
+#   method <- form$method
+#   if (!(method %in% c("POST", "GET"))) {
+#     warning("Invalid method (", method, "), defaulting to GET", call. = FALSE)
+#     method <- "GET"
+#   }
+#   
+#   url <- form$url
+#   
+#   fields <- form$fields
+#   fields <- Filter(function(x) length(x$value) > 0, fields)
+#   fields <- Filter(function(x) is.null(x$type) || ((x$type != "radio") && (x$type != "checkbox")) || (!is.null(x$type) && (x$type %in% c("checkbox", "radio")) && !is.null(x$checked) && (x$checked == "true" || x$checked == "checked")), fields)
+#   fields <- fields[setdiff(names(fields), other_submits)]
+#   
+#   values <- pluck(fields, "value")
+#   names(values) <- names(fields)
+#   
+#   list(
+#     method = method,
+#     encode = form$enctype,
+#     url = url,
+#     values = values
+#   )
+# }
+
+
 ##########################
 # Preparation & Settings #
 ##########################
@@ -21,7 +142,7 @@ maxsize_sd <- 200
 
 
 scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
-
+  
   # if databasename is a vector, maxsize should be a vector as well
   # as for different database the max page size can be different
   require(rvest)
@@ -42,9 +163,10 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
   for (i in 1:length(databasename)){
     if (tolower(str_replace_all(databasename[i]," ","")) == "sagejournal"){
       databaseidx[i] <- 1
-    }
-    if (tolower(str_replace_all(databasename[i]," ","")) == "pubmed"){
+    }else if (tolower(str_replace_all(databasename[i]," ","")) == "sciencedirect"){
       databaseidx[i] <- 2
+    }else if (tolower(str_replace_all(databasename[i]," ","")) == "pubmed"){
+      databaseidx[i] <- 3
     }
   }
   
@@ -96,7 +218,7 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
         }
       }
       
-
+      
       link_cur <- html_nodes(page,xpath = paste('//*[@id="frmSearchResults"]/ol/li[',i,']/article/div[4]/a[1]',sep='')) %>% html_attrs() %>% unlist() # from 'show abstract'
       if (length(link_cur)==0){
         link_cur <- html_nodes(page,xpath = paste('//*[@id="frmSearchResults"]/ol/li[',i,']/article/div[3]/a[2]',sep='')) %>% html_attrs() %>% unlist() # from icon 'abstract'
@@ -127,33 +249,163 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
     }
     return(data.frame(title = title, author = author, abstract = abstract, link = link))
   }
-  getinfo_sd <- function(page,n){
+  getinfo_sd <- function(session,page){
+    maxsize_db <- 25
+    
     n <- page %>% html_nodes('strong') %>% html_text() # Search results: 5,859
-    n <- str_split_fixed(n,' ',3)
-    n <- as.numeric(str_replace(n[1,3],',','')) # the 3rd element is number of result; remove ','
     
     title <- c()
     author <- c()
     link <- c()
     abstract <- c()
     
-    if (n <= 25){
-      title <- page %>% html_nodes('.S_C_artTitle') %>% html_text()
-      author <- page %>% html_nodes('.authorTxt') %>% html_text()
-      link <- page %>% html_nodes('#title_S1572308917302231')
+    if (length(n) == 0){
+      print(paste('Total results: 0'))
+    }else{    
+      n <- str_split_fixed(n,' ',3)
+      n <- as.numeric(str_replace(n[1,3],',','')) # the 3rd element is number of result; remove ','
+      
+      if (n <= maxsize_db){
+        print(paste('Total results: ', n, sep=''))
+        
+        title <- c(title,page %>% html_nodes('.S_C_artTitle') %>% html_text())
+        author <- c(author,page %>% html_nodes('.authorTxt') %>% html_text())
+        link <- c(link,page %>% html_nodes('.S_C_artTitle') %>% html_attr('href'))
+        
+        abstract_check <- str_detect(tolower(page %>% html_nodes('ul.extLinkBlock ') %>% html_text()),'abstract')
+        link_abs_raw <- page %>% html_nodes('ul.extLinkBlock a[data-type="abstract"]') %>% html_attr('data-url')
+        link_abs <- c()
+        for (i in 1:n){
+          if (abstract_check[i]==TRUE){
+            link_abs[i] <- link_abs_raw[1]
+            link_abs_raw <- link_abs_raw[-1]
+          }else{
+            link_abs[i] <- ''
+          }
+        }
+        
+        for (i in 1:n){
+          if (link_abs[i]!=''){
+            page_cur <- read_html(link_abs[i])
+            abstract <- c(abstract,paste(page_cur %>% html_nodes('.paraText') %>% html_text(),collapse = ' '))
+          }else{
+            abstract <- c(abstract,'No abstract')
+          }
+          print(paste("Done: ", i,'/',n,sep=''))
+        }
+      }else{
+        num_page <- n %/% maxsize_db + 1
+        
+        print(paste('Total results: ', n, sep=''))
+        print(paste('Total pages: ', num_page, sep=''))
+        for (k in 1:num_page){
+          print(paste('Current page: ',k,'/', num_page, sep=''))
+          if (k > 1){
+            session <- html_form(session)[[4]] %>%
+              submit_form(session=session,form=.,submit = 'bottomNext')
+            page <- read_html(session$url)
+          }
+          title <- c(title,page %>% html_nodes('.S_C_artTitle') %>% html_text())
+          author <- c(author,page %>% html_nodes('.authorTxt') %>% html_text())
+          link <- c(link,page %>% html_nodes('.S_C_artTitle') %>% html_attr('href'))
+          
+          abstract_check <- str_detect(tolower(page %>% html_nodes('ul.extLinkBlock ') %>% html_text()),'abstract')
+          link_abs_raw <- page %>% html_nodes('ul.extLinkBlock a[data-type="abstract"]') %>% html_attr('data-url')
+          link_abs <- c()
+          for (i in 1:n){
+            if (abstract_check[i]==TRUE){
+              link_abs[i] <- link_abs_raw[1]
+              link_abs_raw <- link_abs_raw[-1]
+            }else{
+              link_abs[i] <- ''
+            }
+          }
+          
+          for (i in 1:n){
+            if (link_abs[i]!=''){
+              page_cur <- read_html(link_abs[i])
+              abstract <- c(abstract,paste(page_cur %>% html_nodes('.paraText') %>% html_text(),collapse = ' '))
+            }else{
+              abstract <- c(abstract,'No abstract')
+            }
+          }
+        }
+      }
     }
-    
+    closeAllConnections()
+    return(data.frame(title = title, author = author, abstract = abstract, link = link))
   }
+  
+  
+  getinfo_pm <- function(page,url_pm){
+    maxsize_db <- 20
+    
+    n <- page %>% html_nodes('.result_count') %>% html_text() # Search results: 5,859
+    
+    title <- c()
+    author <- c()
+    link <- c()
+    abstract <- c()
+    
+    if (length(n) == 0){
+      print(paste('Total results: 0'))
+    }else{    
+      n <- str_split_fixed(n,' ',6)
+      n <- as.numeric(str_replace(n[1,6],',','')) # the 3rd element is number of result; remove ','
+      
+      if (n <= maxsize_db){
+        print(paste('Total results: ', n, sep=''))
+        
+        title <- c(title,page %>% html_nodes('.title') %>% html_text())
+        author <- c(author,page %>% html_nodes('.desc') %>% html_text())
+        link_abs <- paste('https://www.ncbi.nlm.nih.gov',page %>% html_nodes('.title a') %>% html_attr('href'),sep='')
+        link <- c(link,link_abs)
+        
+        for (i in 1:n){
+          page_cur <- read_html(link_abs[i])
+          abstract <- c(abstract,paste(page_cur %>% html_nodes('abstracttext') %>% html_text(),collapse = ' '))
+          print(paste("Done: ", i,'/',n,sep=''))
+        }
+      }else{
+        num_page <- n %/% maxsize_db + 1
+        
+        print(paste('Total results: ', n, sep=''))
+        print(paste('Total pages: ', num_page, sep=''))
+        for (k in 1:num_page){
+          print(paste('Current page: ',k,'/', num_page, sep=''))
+          if (k > 1){
+            page %>% html_nodes('.next')
+            session <- html_form(html_session(url_pm))[[4]] %>%
+              submit_form(session=session,form=.,submit = 'bottomNext')
+            page <- read_html(session$url)
+          }
+          title <- c(title,page %>% html_nodes('.title') %>% html_text())
+          author <- c(author,page %>% html_nodes('.desc') %>% html_text())
+          link_abs <- paste('https://www.ncbi.nlm.nih.gov',page %>% html_nodes('.title a') %>% html_attr('href'),sep='')
+          link <- c(link,link_abs)
+          for (i in 1:maxsize_db){
+            page_cur <- read_html(link_abs[i])
+            abstract <- c(abstract,paste(page_cur %>% html_nodes('abstracttext') %>% html_text(),collapse = ' '))
+            print(paste("Done: ",i,"/",maxsize_db,sep=''))
+          }
+        }
+      }
+    }
+    closeAllConnections()
+    return(data.frame(title = title, author = author, abstract = abstract, link = link))
+  }
+  
   
   
   num_stage <- length(keywordsA) * length(keywordsB) * num_database
   num_stage_cur <- 0
   data_total <- data.frame()
   for (db in 1:num_database){
-    databaseidx_cur <- databaseidx[i]
+    databaseidx_cur <- databaseidx[db]
     
     for (keywordA in keywordsA){
       for (keywordB in keywordsB){
+        closeAllConnections()
         
         keywordA_original <- keywordA
         keywordB_original <- keywordB
@@ -161,12 +413,16 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
         maxsize_db <- maxsize[db]
         num_stage_cur <- num_stage_cur + 1
         
-        if (databaseidx[i] == 1){ ## if databse is sage journal
+        print(paste('Start current stage (', num_stage_cur, '/', num_stage, '): ', sep=''))
+        print(paste('KeywordA: ',keywordA,'; KeywordB: ',keywordB, '; Database: ', databasename[db]))
+        
+        if (databaseidx[db] == 1){ ## if databse is sage journal
           keywordA <- str_replace_all(str_trim(keywordA),' ', '+')
           keywordB <- str_replace_all(str_trim(keywordB),' ', '+')
           
           url_sage <- geturl(databaseidx_cur,maxsize_db,area,keywordA,keywordB,1)
-          page <- read_html(url_sage)
+          download.file(url_sage, destfile = "scrapedpage.html", quiet=TRUE)
+          page <- read_html("scrapedpage.html")
           closeAllConnections()
           
           n <- page %>%
@@ -176,12 +432,8 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
             as.numeric()
           
           if (length(n) == 0){
-            print(paste('Start current stage (', num_stage_cur, '/', num_stage, '): ', sep=''))
-            print(paste('KeywordA: ',keywordA,'; KeywordB: ',keywordB, '; Database: ', databasename[db]))
             print(paste('Total results: 0'))
           }else{
-            print(paste('Start current stage (', num_stage_cur, '/', num_stage, '): ', sep=''))
-            print(paste('KeywordA: ',keywordA,'; KeywordB: ',keywordB, '; Database: ', databasename[db]))
             print(paste('Total results: ', n, sep=''))
             if (n <= maxsize_db){
               print(paste('Total pages: 1'))
@@ -196,8 +448,9 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
                 if (k == 1){
                   data <- getinfo_sj(page,maxsize_db)
                 }else {
-                  url_sage_cur <- geturl(databaseidx_cur,maxsize_db,area,keywordA_original,keywordB_original,k)
-                  page_cur <- read_html(url_sage_cur)
+                  url_sage_cur <- geturl(databaseidx_cur,maxsize_db,area,keywordA,keywordB,k)
+                  download.file(url_sage_cur, destfile = "scrapedpage_cur.html", quiet=TRUE)
+                  page_cur <- read_html("scrapedpage_cur.html")
                   closeAllConnections()
                   
                   if (k < num_page){
@@ -214,31 +467,45 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
             }
           }
           
-         
-        }else if (databaseidx == 2){
+          
+        }else if (databaseidx[db] == 2){
           session <- html_session('http://www.sciencedirect.com/science/search')
           form <- html_form(session)[[4]]
           
+          # set search keyword --> works
           searchvalue <- form %>% 
-            set_values(SearchText = keywordA,addSearchText = keywordB)
+            set_values(SearchText = keywordA,
+                       addSearchText = keywordB) 
           
+          # set range for keyword --> works
+          searchvalue$fields$keywordOpt$value <- form$fields$keywordOpt$options[2]
+          searchvalue$fields$addkeywordOpt$value <- form$fields$addkeywordOpt$options[2]
           
-          url <- paste(submit_form(session,searchvalue)$url)
-          page <- read_html(url)
-          data <- getinfo_sd(page)
+          # set checkbox (Subscribed publications: value = '1')
+          searchvalue$fields[[16]]$checked <- searchvalue$fields[[12]]$checked
           
           session_result <- submit_form(session,searchvalue)
-          session2 <- html_form(session_result)[[4]] %>%
-             set_values(resultsPerPage = '5') %>%
-            submit_form(session=session_result,form=.,submit = 'bottomNext')
+          page <- read_html(session_result$url)
+          page %>% html_nodes('strong') %>% html_text() # Search results: 5,859
           
-          page <- read_html(session2$url)
-          page %>% html_nodes('.authorTxt') %>% html_text()
+          data <- getinfo_sd(session_result,page) %>%
+            mutate(searchtermA = keywordA_original, searchtermB = keywordB_original, database = databasename[db])
+        }else if (databaseidx[db] == 3){
           
-          page <- read_html('http://www.sciencedirect.com/science?_ob=ArticleListURL&_method=tag&searchtype=a&refSource=search&_st=4&sort=r&filterType=&_chunk=0&NEXT_LIST=1&view=c&md5=8961aff8b7b164190c4bccd3ee3d42fc&_ArticleListID=-1177584790&chunkSize=25&sisr_search=&navSrc=280203&navCon=jrl&art=1-s2.0-S1572308917302231&bottomPaginationBoxChanged=&bottomNext=Next%20%3E%3E&displayPerPageFlag=f&resultsPerPage=200')
-          page %>% html_nodes('.authorTxt') %>% html_text()
+          keywordA <- str_replace_all(str_trim(keywordA),' ', '%20')
+          keywordB <- str_replace_all(str_trim(keywordB),' ', '%20')
           
-          title <- page %>% html_nodes('.authorTxt') %>% html_text()
+          url_pm <- paste('https://www.ncbi.nlm.nih.gov/pubmed?term=(',
+                          keywordA,'%5BTitle%2FAbstract%5D)%20AND%20',
+                          keywordB,'%5BTitle%2FAbstract%5D', sep='')
+          
+          # https://www.ncbi.nlm.nih.gov/pubmed?term=(defaults%5BTitle%2FAbstract%5D)%20AND%20decisions%5BTitle%2FAbstract%5D
+          # https://www.ncbi.nlm.nih.gov/pubmed?term=(consumer%20behavior%5BTitle%2FAbstract%5D)%20AND%20decision-making%5BTitle%2FAbstract%5D
+          
+          page <- read_html(url_pm)
+          
+          data <- getinfo_pm(page,url_pm) %>%
+            mutate(searchtermA = keywordA_original, searchtermB = keywordB_original, database = databasename[db])
         }
         
         data_total <- rbind(data_total,data)
@@ -248,12 +515,14 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
   return(data_total)
 }
 
-# Sage Journals
-# http://journals.sagepub.com/action/doSearch?content=articlesChapters&countTerms=true&pageSize=100&target=default&field1=Abstract&text1=Default+AND+Decisions&field2=AllField&text2=&Ppub=&Ppub=&AfterYear=&BeforeYear=&access=
-# http://journals.sagepub.com/action/doSearch?field1=Abstract&text1=default+effect&field2=Abstract&text2=decision-making&Ppub=&Ppub=&AfterYear=&BeforeYear=&access=
 
 
 
+#####################
+# test
+####################
+
+# sage journal with a few keywords
 keywordsA <- c('defaults','default effect')
 keywordsB <- c('decisions','psychology')
 area <- 'abstract'
@@ -266,7 +535,7 @@ data_test <- data_test[!duplicated(data_test[,c('title','author','abstract','lin
 
 
 
-
+# sage journal with full keywords
 keywordsA <- c("defaults","default effect","advance directives","opt-out")
 keywordsB <- c("decisions","decision-making","consumer behavior")
 area <- "abstract"
@@ -274,6 +543,41 @@ maxsize <- 100
 databasename <- 'sage journal'
 data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
 data_test_clean <- data_test[!duplicated(data_test[,c('title','author','abstract','link')]),]
+
+
+# sage journal and science direct with a few keywords
+
+t <- proc.time()
+
+keywordsA <- c('defaults','default effect')
+keywordsB <- c('decisions','psychology')
+area <- 'abstract'
+maxsize <- c(100,0)
+databasename <- c('sage journal','science direct')
+
+data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
+
+proc.time() - t
+
+
+
+
+# sage journal and science direct with full keywords
+
+t <- proc.time()
+
+keywordsA <- c("defaults","default effect","advance directives","opt-out")
+keywordsB <- c("decisions","decision-making","consumer behavior")
+area <- 'abstract'
+maxsize <- c(100,0)
+databasename <- c('sage journal','science direct')
+
+data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
+
+proc.time() - t 
+
+data_test_clean <- data_test_clean
+
 
 
 library(dplyr)
