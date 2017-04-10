@@ -449,8 +449,7 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
                   data <- getinfo_sj(page,maxsize_db)
                 }else {
                   url_sage_cur <- geturl(databaseidx_cur,maxsize_db,area,keywordA,keywordB,k)
-                  download.file(url_sage_cur, destfile = "scrapedpage_cur.html", quiet=TRUE)
-                  page_cur <- read_html("scrapedpage_cur.html")
+                  page_cur <- read_html(url_sage_cur)
                   closeAllConnections()
                   
                   if (k < num_page){
@@ -499,6 +498,16 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
                           keywordA,'%5BTitle%2FAbstract%5D)%20AND%20',
                           keywordB,'%5BTitle%2FAbstract%5D', sep='')
           
+          url_pm <- paste('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=',
+                          keywordA,'[title/abstract]',
+                          '+AND+',
+                          keywordB,'[title/abstract]',
+                          '&retmax=10000',sep='')
+          page <- read_html(url_pm)
+          write_html(page,'test.html')
+          page %>% html_nodes(xpath='//*[@id="collapsible1"]/div[1]/div[2]/div[1]/span[2]') %>% html_text()
+          # https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term="science"[journal]+AND+breast+cancer+AND+2008[pdat]
+
           # https://www.ncbi.nlm.nih.gov/pubmed?term=(defaults%5BTitle%2FAbstract%5D)%20AND%20decisions%5BTitle%2FAbstract%5D
           # https://www.ncbi.nlm.nih.gov/pubmed?term=(consumer%20behavior%5BTitle%2FAbstract%5D)%20AND%20decision-making%5BTitle%2FAbstract%5D
           
@@ -574,9 +583,9 @@ databasename <- c('sage journal','science direct')
 
 data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
 
-proc.time() - t 
+proc.time() - t
 
-data_test_clean <- data_test_clean
+
 
 
 
