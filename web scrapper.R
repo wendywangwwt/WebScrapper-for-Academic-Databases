@@ -141,7 +141,7 @@ maxsize_sj <- 100
 maxsize_sd <- 200
 
 
-scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
+scrape <- function(keywordsA, keywordsB, area, databasename){
   
   # if databasename is a vector, maxsize should be a vector as well
   # as for different database the max page size can be different
@@ -151,10 +151,6 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
   require(qdap)
   
   
-  ## check number of database
-  if (length(maxsize) != length(databasename)){
-    stop("Number of maxsize and number of database should be equal")
-  }
   
   num_database <- length(databasename)
   
@@ -335,60 +331,65 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
     closeAllConnections()
     return(data.frame(title = title, author = author, abstract = abstract, link = link))
   }
-  
-  
-  getinfo_pm <- function(page,url_pm){
-    maxsize_db <- 20
+  getinfo_pm <- function(page,n){
+    maxsize_db <- 200
     
-    n <- page %>% html_nodes('.result_count') %>% html_text() # Search results: 5,859
+    ids <- page %>% html_nodes('id') %>% html_text()
     
-    title <- c()
-    author <- c()
-    link <- c()
-    abstract <- c()
+    link <- paste('https://www.ncbi.nlm.nih.gov/pubmed/',ids,sep='')
     
-    if (length(n) == 0){
-      print(paste('Total results: 0'))
-    }else{    
-      n <- str_split_fixed(n,' ',6)
-      n <- as.numeric(str_replace(n[1,6],',','')) # the 3rd element is number of result; remove ','
+    if (n <= maxsize_db){
+      print(paste('Total results: ', n, sep=''))
+      url_summary <- paste('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=',
+                           paste(ids,collapse=','),
+                           '&rettype=text',sep='')
+      page_summary <- read_html(url_summary)
+      title <- page_summary %>% html_nodes('articletitle') %>% html_text()
+      article_nodes <- page_summary %>% html_nodes('authorlist')
+      author <- c()
+      abstract <- c()
+      for (article_node in article_nodes){
+        author <- c(author,paste(article_node %>% html_nodes('forename') %>% html_text(),article_node %>% html_nodes('lastname') %>% html_text(),collapse = ', '))
+        abstract_now <- article_node %>% html_nodes('abstract') %>% html_text()
+        abstract <- if(length(abstract_now)>0) c(abstract,abstract_now) else c(abstract,'No abstract')
+      }
       
-      if (n <= maxsize_db){
-        print(paste('Total results: ', n, sep=''))
+      print(paste("Done: ", n,'/',n,sep=''))
+      
+    }else{
+      num_page <- n %/% maxsize_db + 1
+      
+      print(paste('Total results: ', n, sep=''))
+      print(paste('Total pages: ', num_page, sep=''))
+      
+      title <- c()
+      author <- c()
+      abstract <- c()
+      count_done <- 0
+      for (k in 1:num_page){
+        print(paste('Current page: ',k,'/', num_page, sep=''))
         
-        title <- c(title,page %>% html_nodes('.title') %>% html_text())
-        author <- c(author,page %>% html_nodes('.desc') %>% html_text())
-        link_abs <- paste('https://www.ncbi.nlm.nih.gov',page %>% html_nodes('.title a') %>% html_attr('href'),sep='')
-        link <- c(link,link_abs)
-        
-        for (i in 1:n){
-          page_cur <- read_html(link_abs[i])
-          abstract <- c(abstract,paste(page_cur %>% html_nodes('abstracttext') %>% html_text(),collapse = ' '))
-          print(paste("Done: ", i,'/',n,sep=''))
+        ids_cur <- if (k < num_page) ids[seq((1+maxsize_db*(k-1)),maxsize_db*k)] else ids[seq((1+maxsize_db*(k-1)),length(ids))]
+        url_summary_cur <- paste('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=',
+                                 paste(ids_cur,collapse=','),
+                                 '&rettype=text',sep='')
+        page_summary_cur <- read_html(url_summary_cur)
+        title_cur <- page_summary_cur %>% html_nodes('articletitle') %>% html_text()
+        article_nodes_cur <- page_summary_cur %>% html_nodes('pubmedarticle')
+        author_cur <- c()
+        abstract_cur <- c()
+        for (article_node_cur in article_nodes_cur){
+          count_done <- count_done + 1
+          author_cur <- c(author_cur,paste(article_node_cur %>% html_nodes('forename') %>% html_text(),article_node_cur %>% html_nodes('lastname') %>% html_text(),collapse = ', '))
+          abstract_cur_now <- article_node_cur %>% html_nodes('abstract') %>% html_text()
+          abstract_cur <- if(length(abstract_cur_now)>0) c(abstract_cur,abstract_cur_now) else c(abstract_cur,'No abstract')
         }
-      }else{
-        num_page <- n %/% maxsize_db + 1
+        #abstract_cur <- page_summary_cur %>% html_nodes('abstract') %>% html_text()
         
-        print(paste('Total results: ', n, sep=''))
-        print(paste('Total pages: ', num_page, sep=''))
-        for (k in 1:num_page){
-          print(paste('Current page: ',k,'/', num_page, sep=''))
-          if (k > 1){
-            page %>% html_nodes('.next')
-            session <- html_form(html_session(url_pm))[[4]] %>%
-              submit_form(session=session,form=.,submit = 'bottomNext')
-            page <- read_html(session$url)
-          }
-          title <- c(title,page %>% html_nodes('.title') %>% html_text())
-          author <- c(author,page %>% html_nodes('.desc') %>% html_text())
-          link_abs <- paste('https://www.ncbi.nlm.nih.gov',page %>% html_nodes('.title a') %>% html_attr('href'),sep='')
-          link <- c(link,link_abs)
-          for (i in 1:maxsize_db){
-            page_cur <- read_html(link_abs[i])
-            abstract <- c(abstract,paste(page_cur %>% html_nodes('abstracttext') %>% html_text(),collapse = ' '))
-            print(paste("Done: ",i,"/",maxsize_db,sep=''))
-          }
-        }
+        title <- c(title,title_cur)
+        author <- c(author,author_cur)
+        abstract <- c(abstract,abstract_cur)
+        print(paste("Done: ", count_done,'/',n,sep=''))
       }
     }
     closeAllConnections()
@@ -410,7 +411,6 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
         keywordA_original <- keywordA
         keywordB_original <- keywordB
         
-        maxsize_db <- maxsize[db]
         num_stage_cur <- num_stage_cur + 1
         
         print(paste('Start current stage (', num_stage_cur, '/', num_stage, '): ', sep=''))
@@ -420,6 +420,7 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
           keywordA <- str_replace_all(str_trim(keywordA),' ', '+')
           keywordB <- str_replace_all(str_trim(keywordB),' ', '+')
           
+          maxsize_db <- 100
           url_sage <- geturl(databaseidx_cur,maxsize_db,area,keywordA,keywordB,1)
           download.file(url_sage, destfile = "scrapedpage.html", quiet=TRUE)
           page <- read_html("scrapedpage.html")
@@ -451,6 +452,7 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
                   url_sage_cur <- geturl(databaseidx_cur,maxsize_db,area,keywordA,keywordB,k)
                   download.file(url_sage_cur, destfile = "scrapedpage_cur.html", quiet=TRUE)
                   page_cur <- read_html("scrapedpage_cur.html")
+                  
                   closeAllConnections()
                   
                   if (k < num_page){
@@ -492,20 +494,28 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
             mutate(searchtermA = keywordA_original, searchtermB = keywordB_original, database = databasename[db])
         }else if (databaseidx[db] == 3){
           
-          keywordA <- str_replace_all(str_trim(keywordA),' ', '%20')
-          keywordB <- str_replace_all(str_trim(keywordB),' ', '%20')
+          keywordA_fix <- str_replace_all(str_trim(keywordA),' ', '%20')
+          keywordB_fix <- str_replace_all(str_trim(keywordB),' ', '%20')
           
-          url_pm <- paste('https://www.ncbi.nlm.nih.gov/pubmed?term=(',
-                          keywordA,'%5BTitle%2FAbstract%5D)%20AND%20',
-                          keywordB,'%5BTitle%2FAbstract%5D', sep='')
-          
-          # https://www.ncbi.nlm.nih.gov/pubmed?term=(defaults%5BTitle%2FAbstract%5D)%20AND%20decisions%5BTitle%2FAbstract%5D
-          # https://www.ncbi.nlm.nih.gov/pubmed?term=(consumer%20behavior%5BTitle%2FAbstract%5D)%20AND%20decision-making%5BTitle%2FAbstract%5D
-          
+          url_pm <- paste('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=[journal]+',
+                          keywordA_fix,'[title/abstract]',
+                          '+AND+',
+                          keywordB_fix,'[title/abstract]',
+                          '&retmax=10000',sep='')
           page <- read_html(url_pm)
           
-          data <- getinfo_pm(page,url_pm) %>%
-            mutate(searchtermA = keywordA_original, searchtermB = keywordB_original, database = databasename[db])
+          n <- page %>% html_nodes('count') %>% html_text() %>% as.numeric()
+          n <- n[1]
+          
+          if (n > 0){
+            data <- getinfo_pm(page,n) %>%
+              mutate(searchtermA = keywordA_original, searchtermB = keywordB_original, database = databasename[db])
+          }else{
+            print(paste('Total results: 0'))
+            next
+          }
+          
+          
         }
         
         data_total <- rbind(data_total,data)
@@ -526,12 +536,11 @@ scrape <- function(keywordsA, keywordsB, area, maxsize, databasename){
 keywordsA <- c('defaults','default effect')
 keywordsB <- c('decisions','psychology')
 area <- 'abstract'
-maxsize <- 100
 databasename <- 'sagejournal'
 
-data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
+data_test <- scrape(keywordsA,keywordsB,area,databasename)
 
-data_test <- data_test[!duplicated(data_test[,c('title','author','abstract','link')]),]
+data_test <- data_test[!duplicated(data_test$title),]
 
 
 
@@ -539,7 +548,6 @@ data_test <- data_test[!duplicated(data_test[,c('title','author','abstract','lin
 keywordsA <- c("defaults","default effect","advance directives","opt-out")
 keywordsB <- c("decisions","decision-making","consumer behavior")
 area <- "abstract"
-maxsize <- 100
 databasename <- 'sage journal'
 data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
 data_test_clean <- data_test[!duplicated(data_test[,c('title','author','abstract','link')]),]
@@ -552,10 +560,9 @@ t <- proc.time()
 keywordsA <- c('defaults','default effect')
 keywordsB <- c('decisions','psychology')
 area <- 'abstract'
-maxsize <- c(100,0)
 databasename <- c('sage journal','science direct')
 
-data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
+data_test <- scrape(keywordsA,keywordsB,area,databasename)
 
 proc.time() - t
 
@@ -569,15 +576,39 @@ t <- proc.time()
 keywordsA <- c("defaults","default effect","advance directives","opt-out")
 keywordsB <- c("decisions","decision-making","consumer behavior")
 area <- 'abstract'
-maxsize <- c(100,0)
 databasename <- c('sage journal','science direct')
 
-data_test <- scrape(keywordsA,keywordsB,area,maxsize,databasename)
+data_test <- scrape(keywordsA,keywordsB,area,databasename)
 
-proc.time() - t 
+proc.time() - t
 
-data_test_clean <- data_test_clean
 
+# pubmed with full keywords
+
+t <- proc.time()
+
+keywordsA <- c("defaults","default effect","advance directives","opt-out")
+keywordsB <- c("decisions","decision-making","consumer behavior")
+area <- 'abstract'
+databasename <- c('pubmed')
+
+data_test <- scrape(keywordsA,keywordsB,area,databasename)
+data_test <- data_test[!duplicated(data_test$title),]
+proc.time() - t
+
+
+# sage journal, science direct, and pubmed with full keywords
+
+t <- proc.time()
+
+keywordsA <- c("defaults","default effect","advance directives","opt-out")
+keywordsB <- c("decisions","decision-making","consumer behavior")
+area <- 'abstract'
+databasename <- c('sage journal','science direct')
+
+data_test <- scrape(keywordsA,keywordsB,area,databasename)
+
+proc.time() - t
 
 
 library(dplyr)
