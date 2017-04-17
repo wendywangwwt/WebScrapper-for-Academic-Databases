@@ -18,11 +18,11 @@ I'm starting to create a web scrapper for academic databases in R in the form of
     - the only problem is it runs slow (searching for the 4 keywords in group A and 3 keywords in group B (12 pairs in total, as Shannon listed) takes about 40 or 50 minutes).. currently I have no plan to optimize the code since you can run the function and put it aside for hours.
 
   - Science Direct
-    - approach to get the page: fill the advanced search form and submit the form (will get a session back) to get the link for the first page, then click 'next' (which is in the form of a submit input) to get the session of next page; iterate until all the pages are collected
+    - approach to get the page: merge needed arguments into a href link (get feedback from API, max number of article per page has a limit of 200)
     - approach to filter out info: css selector
     - 4 types of info are collected: title, author, abstract, link
-    - can handle paper without abstract listed
-    - bug 2: need to mark the checkbox for full range of search result. In order to overcome the lack of page argument, I submit the filled form to get the first session. The rvest package currently cannot handle checkbox status and currently the default is to search open access articles ONLY (we also need to search subscribed journals); I tried to directly modify the returned form object instead of using rvest::set_values() by myself but it didn't work (other parts like drop down menu can be set in this way successfully). I sent an email to the author of rvest package and hopefully he could reply me soon. If he didn't reply me by Monday I will try to change the approach to create the first link manually by code and then create the session to click 'next' button.
+    - no bug till now, can handle paper without abstract listed
+    - runs very fast as searching and fetching through API links (12 pairs of test keywords take about 70 seconds)
 
   - PubMed
     - approach to get the page: merge needed arguments into a href link (get feedback from API, max number of article per page is set to be 10000)
@@ -48,7 +48,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
 ### API
 - Sage Journal
   - [Argument](http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm)
-  
+   
 - PubMed
   - [Walk Through](https://dataguide.nlm.nih.gov/eutilities/how_eutilities_works.html)
   - [Argument](https://dataguide.nlm.nih.gov/eutilities/utilities.html#esearch)
@@ -56,6 +56,22 @@ I'm starting to create a web scrapper for academic databases in R in the form of
     
     
 ## Update Details
+April 17:
+- Science Direct
+  - changed the approach, now api is used to search and fetch data
+  - 4 types of info are collected: title, author, abstract , link
+  - no bug found
+  - speed up a lot by using api
+  - examples tested:
+```
+keywordsA <- c("defaults","default effect","advance directives","opt-out")
+keywordsB <- c("decisions","decision-making","consumer behavior")
+area <- "abstract"
+databasename <- 'science direct'
+
+data_test <- scrape(keywordsA,keywordsB,area,databasename)
+```
+
 April 13:
 - PubMed
   - can search and fetch data
