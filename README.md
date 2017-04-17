@@ -33,13 +33,22 @@ I'm starting to create a web scrapper for academic databases in R in the form of
 
 
 - Rank or filter the result
-
+  - Duplication Filter
+    - currently filter by title
+    - check if there is duplicated title after removing all the spaces and punctuation and turning into lower case
+    
   - tf-idf
+    - use tidytext::bind_tf_idf()
     - tf-idf was tried on the result of Sage Journal (using the 2 groups of keywords listed by Shannon) to rank or score the relatedness or keyword importance of the articles using their abstract. It's calculated on unigram (single word) while some of our keywords are bigram (e.g., consumer behavior), I'm considering to add some constraints on the score and rank them again (e.g., the socre of 'consumer' and that of 'behavior' is meaningful only when both of them occur in the abstract).
 
   - Latent Dirichlet Allocation
-    - I'm also considering to use this common topic modeling method to model the topic of the abstracts and see if it can help.
-
+    - use topicmodels::LDA()
+    - first turn the array of abstracts into tidy form (word by document) then use tidy::cast_dtm() to cast it into document-term-matrix as the input for LDA function
+    - Problem: the problem of unsupervised learning. The number of topic (k) is a tuning parameter and will largely influence the filtering/ranking/scoring (any word you want to call it) result. It will be a little bit tricky especially for specialized database like PubMed. For example, if a user only searches these keywords on PubMed and another only searches these on a psychology database (not sure if it exists but just an example), the clustering will be totally different and hard to compare.
+    - Potential Solution: 
+      - make use of keywords and tf-idf, which is a general solution
+      - make use of labeled articles like here we have a couple of papers on hand, which is not a general solution but the quality could be really good depending on the number of labeled articles
+    
   - Doc2Vec neural network
     - a novel way to cluster documents. I may try it in the summer:p
     
@@ -71,6 +80,22 @@ databasename <- 'science direct'
 
 data_test <- scrape(keywordsA,keywordsB,area,databasename)
 ```
+- Overall
+  - three databases are incoporated in the function without error till now
+  - examples tested:
+```
+keywordsA <- c("defaults","default effect","advance directives","opt-out")
+keywordsB <- c("decisions","decision-making","consumer behavior")
+area <- 'abstract'
+databasename <- c('sage journal','science direct','pubmed')
+data_test <- scrape(keywordsA,keywordsB,area,databasename,filterduplication = T,sdkey=sdkey)
+```
+  - example performance (separate): Sage Journal ~ 2800 seconds, Science Direct ~ 70 seconds, PubMed ~ 60 seconds
+
+- LDA
+  - found a package (topicmodels) to do Latent Dirichlet Allocation 
+  - successfully performed LDA on abstracts collected
+  - need to figure out a way to use the result
 
 April 13:
 - PubMed
