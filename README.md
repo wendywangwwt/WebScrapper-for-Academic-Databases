@@ -43,6 +43,17 @@ I'm starting to create a web scrapper for academic databases in R in the form of
   - Doc2Vec neural network
     - a novel way to cluster documents. I may try it in the summer:p
     
+
+## Reference
+### API
+- Sage Journal
+  - [Argument](http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm)
+  
+- PubMed
+  - [Walk Through](https://dataguide.nlm.nih.gov/eutilities/how_eutilities_works.html)
+  - [Argument](https://dataguide.nlm.nih.gov/eutilities/utilities.html#esearch)
+   
+    
     
 ## Update Details
 April 13:
