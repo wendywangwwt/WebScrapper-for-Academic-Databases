@@ -15,7 +15,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
   - databasename: an array of database names to be searched; currently supports Sage Journal, Science Direct, and PubMed
   - filterduplication: whether to remove duplicated records in terms of title
   - sdkey: need to be a string (your api key) if Science Direct is in the databasename
-  - limitsearch: can put a number indicating the max number of result to be collected for each pair of keywords; currently must be larger than 200 and smaller than 10000 if is used
+  - limitpersearch: can put a number indicating the max number of result to be collected for each pair of keywords; currently must be larger than 200 and smaller than 10000 if is used
 
 - Scrape databases
 
