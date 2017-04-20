@@ -6,28 +6,40 @@ Getting papers for meta analysis is always annoying: you need to try various com
 ## What I try to do
 I'm starting to create a web scrapper for academic databases in R in the form of a (set of) function.
 
-## Tool Summary
+## Summary
+
+- Function Arguments
+  - keywordsA: an array of the first group of keywords
+  - keywordsB: an array of the second group of keywords
+  - area: currently only supports "abstract", which corresponds to abstract in Sage Journal, title/keywords/abstract in Science Direct, and title/abstract in PubMed
+  - databasename: an array of database names to be searched; currently supports Sage Journal, Science Direct, and PubMed
+  - filterduplication: whether to remove duplicated records in terms of title
+  - sdkey: need to be a string (your api key) if Science Direct is in the databasename
+  - limitsearch: can put a number indicating the max number of result to be collected for each pair of keywords; currently must be larger than 200 and smaller than 10000 if is used
 
 - Scrape databases
 
   - Sage Journal
     - approach to get the page: merge needed arguments into a href link (having an argument to change page)
-    - approach to filter out info: xpath
-    - 4 types of info are collected: title, author, abstract, link
+    - approach to filter out info: css selectors
+    - search field: abstract
+    - 5 types of info are collected: title, author, abstract, link, year
     - no bug till now, can handle paper without abstract listed
     - the only problem is it runs slow (searching for the 4 keywords in group A and 3 keywords in group B (12 pairs in total, as Shannon listed) takes about 40 or 50 minutes).. currently I have no plan to optimize the code since you can run the function and put it aside for hours.
 
   - Science Direct
     - approach to get the page: merge needed arguments into a href link (get feedback from API, max number of article per page has a limit of 200)
-    - approach to filter out info: css selector
-    - 4 types of info are collected: title, author, abstract, link
+    - approach to filter out info: css selectors
+    - search field: title, keywords, abstract
+    - 5 types of info are collected: title, author, abstract, link, year
     - no bug till now, can handle paper without abstract listed
     - runs very fast as searching and fetching through API links (12 pairs of test keywords take about 70 seconds)
 
   - PubMed
     - approach to get the page: merge needed arguments into a href link (get feedback from API, max number of article per page is set to be 10000)
-    - approach to filter out info: css selector
-    - 4 types of info are collected: title, author, abstract, link
+    - approach to filter out info: css selectors
+    - search field: title, abstract
+    - 5 types of info are collected: title, author, abstract, link, year
     - no bug till now, can handle paper without abstract listed
     - runs very fast as searching and fetching through API links (12 pairs of test keywords take about 60 seconds)
 
@@ -65,6 +77,23 @@ I'm starting to create a web scrapper for academic databases in R in the form of
     
     
 ## Update Details
+April 20:
+- Sage Journal
+  - rewrote the subfunction to get info, removed unnecessary loops, changed the logic to be similar to subfunctions for Science Direct and PubMed.. hopefully will reduce runtime
+
+- Overall
+  - added info collected: now collect published year for all 3 databases
+  - added new argument limitpersearch: the max number of result to be collected for each pair of keywords, or each search, must be larger than 200 and smaller than 10000
+  - examples tested:
+```
+keywordsA <- c("defaults","default effect","advance directives","opt-out")
+keywordsB <- c("decisions","decision-making","consumer behavior")
+area <- 'abstract'
+databasename <- c('sage journal','science direct','pubmed')
+data_test <- scrape(keywordsA,keywordsB,area,databasename,filterduplication = T,sdkey=sdkey,limitpersearch = 300)
+```
+
+
 April 17:
 - Science Direct
   - changed the approach, now api is used to search and fetch data
