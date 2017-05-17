@@ -11,7 +11,6 @@ I'm starting to create a web scrapper for academic databases in R in the form of
 - Function Arguments
   - keywordsA: an array of the first group of keywords
   - keywordsB: an array of the second group of keywords
-  - area: currently only supports "abstract", which corresponds to abstract in Sage Journal, title/keywords/abstract in Science Direct, and title/abstract in PubMed
   - databasename: an array of database names to be searched; currently supports Sage Journal, Science Direct, and PubMed
   - filterduplication: whether to remove duplicated records in terms of title
   - sdkey: need to be a string (your api key) if Science Direct is in the databasename
@@ -109,7 +108,7 @@ Academic databases - abidateline abiglobal abitrade accountingtaxbanking advance
     - [feature](http://search.proquest.com/docview/992946798/abstract?source=fedsrch&accountid=10226)
     - [commentary case report](http://search.proquest.com/docview/211345387/abstract?source=fedsrch&accountid=10226)
     - [comparative study](http://search.proquest.com/docview/220505679/abstract?source=fedsrch&accountid=10226)
-    - [expanded reporting](expanded reporting http://search.proquest.com/docview/909432350/fulltext/91BF795E101C43FAPQ/1?accountid=10226)
+    - [expanded reporting](http://search.proquest.com/docview/909432350/fulltext/91BF795E101C43FAPQ/1?accountid=10226)
     - [general information](http://search.proquest.com/docview/223952084/abstract?source=fedsrch&accountid=10226)
     - [editorial](http://search.proquest.com/docview/211326411/abstract?source=fedsrch&accountid=10226)
     - [literature review](http://search.proquest.com/docview/215867804/abstract?source=fedsrch&accountid=10226)
@@ -164,7 +163,12 @@ data_test <- scrape(keywordsA,keywordsB,area,databasename,filterduplication = T,
   
 - Overall
   - added info collected: now collect availability for all 4 databases
+    - Sage Journal: whether having an icon for pdf downloading
+    - Science Direct: assume all are accesible
+    - PubMed: whether having an icon for full text
+    - ProQuest: whether having a link for full text (one of the element returned by api)
   - adjusted the way to remove duplicated records: first remove duplications within each database, then order the merged dataset by availability ("Y", "N", NA), so that (1) when two records having same title, the one with the link to full text will be kept (2) to reducde the numebr of records from PubMed that need to be visited page by page to collect availability info
+  - fixed the condition where the user input a database that the function cannot handle: the function will break and return an error message
 
 April 20:
 - Sage Journal
