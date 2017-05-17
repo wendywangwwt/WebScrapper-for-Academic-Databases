@@ -50,7 +50,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
   - ProQuest
     - approach to get the page: merge needed arguments into a href link (get feedback from API, max number of article per page is set to be 10000)
     - search field: abstract
-    - document type: having at least one of the keywords (journal, article, feature)
+    - document type: having at least one of the keywords (journal, article, feature, periodical, literature)
     - subdatabases searched: politicalscience, publichealth, psychology, sociology, socscijournals, marketresearch, medline
     - no bug till now, haven't come across with paper without abstract listed yet
     - all earchable subdatabases at Columbia University: 
@@ -107,6 +107,12 @@ Academic databases - abidateline abiglobal abitrade accountingtaxbanking advance
     - [country report](http://search.proquest.com/docview/1648087126/fulltext?source=fedsrch&accountid=10226)
     - [commentary](http://search.proquest.com/docview/274307816/fulltextPDF?source=fedsrch&accountid=10226)
     - [feature](http://search.proquest.com/docview/992946798/abstract?source=fedsrch&accountid=10226)
+    - [commentary case report](http://search.proquest.com/docview/211345387/abstract?source=fedsrch&accountid=10226)
+    - [comparative study](http://search.proquest.com/docview/220505679/abstract?source=fedsrch&accountid=10226)
+    - [expanded reporting](expanded reporting http://search.proquest.com/docview/909432350/fulltext/91BF795E101C43FAPQ/1?accountid=10226)
+    - [general information](http://search.proquest.com/docview/223952084/abstract?source=fedsrch&accountid=10226)
+    - [editorial](http://search.proquest.com/docview/211326411/abstract?source=fedsrch&accountid=10226)
+    - [literature review](http://search.proquest.com/docview/215867804/abstract?source=fedsrch&accountid=10226)
   - useful tags in the xml returned
 ```
 datafield tag="245"
