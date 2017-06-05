@@ -11,7 +11,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
 - Function Arguments
   - keywordsA: an array of the first group of keywords
   - keywordsB: an array of the second group of keywords
-  - databasename: an array of database names to be searched; currently supports Sage Journal, Science Direct, and PubMed
+  - databasename: an array of database names to be searched; currently supports Sage Journal, Science Direct, PubMed, and ProQuest
   - filterduplication: whether to remove duplicated records in terms of title
   - sdkey: need to be a string (your api key) if Science Direct is in the databasename
   - limitpersearch: can put a number indicating the max number of result to be collected for each pair of keywords; currently must be larger than 200 and smaller than 10000 if is used
@@ -23,6 +23,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
   - abstract (if there is no abstract the value will be "No abstract")
   - link
   - availability, or whether the full text is accessible
+  - search term A and search term B for reference; Notice that they are just for reference -- it's likely for an article to be in the search result of multiple serach term ombinations, and if you set filterduplication to be TRUE only one record (and also one combination of search terms) will be kept.
 
 - Scrape databases
 
