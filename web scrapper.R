@@ -487,7 +487,7 @@ scrape <- function(keywordsA, keywordsB, databasename=c("sage journal","science 
                           keywordA_fix,'[title/abstract]',
                           '+AND+',
                           keywordB_fix,'[title/abstract]',
-                          '&retmax=10000',sep='')
+                          '&retmax=10000&sort=relevance',sep='')
           page <- read_html(url_pm)
           
           n <- page %>% html_nodes('count') %>% html_text() %>% as.numeric()
