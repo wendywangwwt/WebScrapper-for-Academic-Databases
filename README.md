@@ -151,9 +151,9 @@ subfield code="u" # links
 ## Update Details
 September 14:
 - Overall
- - added support for using only one group of search terms (basically only science direct doesn't accept a blank search term so in the scrapper, the request url is changed for science direct if one search term is blank)
- - added "field" argument, default to abstract but can be changed to "all", which will in essense remove the field restriction during the search
- - example tested:
+  - added support for using only one group of search terms (basically only science direct doesn't accept a blank search term so in the scrapper, the request url is changed for science direct if one search term is blank)
+  - added "field" argument, default to abstract but can be changed to "all", which will in essense remove the field restriction during the search
+  - example tested:
 ```
 keywordsA <- c("dospert")
 keywordsB <- c("")
@@ -163,8 +163,8 @@ data_test <- scrape(keywordsA,keywordsB,databasename,field,sdkey = sdkey,limitpe
 ```
  
 - ProQuest
- - fixed the problem of actual limit: although there is an argument in the url request to set the limit, the API does not necessarily return the amount of the records exactly according to the limit argument. By checking the amount of actual returned records compared to the number of total found records, the scrapper now will use startRecord argument in the request url to scrape several pages if not all the records are returned in one time.
- - fixed the implementation of limitpersearch argument; it simply didn't work.
+  - fixed the problem of actual limit: although there is an argument in the url request to set the limit, the API does not necessarily return the amount of the records exactly according to the limit argument. By checking the amount of actual returned records compared to the number of total found records, the scrapper now will use startRecord argument in the request url to scrape several pages if not all the records are returned in one time.
+  - fixed the implementation of limitpersearch argument; it simply didn't work.
 
 
 April 24 - May 12:
