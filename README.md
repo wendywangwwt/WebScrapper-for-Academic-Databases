@@ -12,6 +12,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
   - keywordsA: an array of the first group of keywords
   - keywordsB: an array of the second group of keywords
   - databasename: an array of database names to be searched; currently supports Sage Journal, Science Direct, PubMed, and ProQuest
+  - field: an array of field to be searched; currently supports "abstract" and "all"; default to abstract
   - filterduplication: whether to remove duplicated records in terms of title
   - sdkey: need to be a string (your api key) if Science Direct is in the databasename
   - limitpersearch: can put a number indicating the max number of result to be collected for each pair of keywords; currently must be larger than 200 and smaller than 10000 if is used
@@ -50,7 +51,7 @@ I'm starting to create a web scrapper for academic databases in R in the form of
   - ProQuest
     - approach to get the page: merge needed arguments into a href link (get feedback from API, max number of article per page is set to be 10000)
     - search field: abstract
-    - document type: having at least one of the keywords (journal, article, feature, periodical, literature)
+    - document type: having at least one of the keywords (journal, article, feature, periodical, literature, statistics)
     - subdatabases searched: politicalscience, publichealth, psychology, sociology, socscijournals, marketresearch, medline
     - no bug till now, haven't come across with paper without abstract listed yet
     - all earchable subdatabases at Columbia University: 
@@ -148,6 +149,24 @@ subfield code="u" # links
     
     
 ## Update Details
+September 14:
+- Overall
+ - added support for using only one group of search terms (basically only science direct doesn't accept a blank search term so in the scrapper, the request url is changed for science direct if one search term is blank)
+ - added "field" argument, default to abstract but can be changed to "all", which will in essense remove the field restriction during the search
+ - example tested:
+```
+keywordsA <- c("dospert")
+keywordsB <- c("")
+databasename <- 'science direct'
+field <- c('abstract','all')
+data_test <- scrape(keywordsA,keywordsB,databasename,field,sdkey = sdkey,limitpersearch = 1200)
+```
+ 
+- ProQuest
+ - fixed the problem of actual limit: although there is an argument in the url request to set the limit, the API does not necessarily return the amount of the records exactly according to the limit argument. By checking the amount of actual returned records compared to the number of total found records, the scrapper now will use startRecord argument in the request url to scrape several pages if not all the records are returned in one time.
+ - fixed the implementation of limitpersearch argument; it simply didn't work.
+
+
 April 24 - May 12:
 - ProQuest
   - now proquest database can be scraped
