@@ -1,5 +1,12 @@
 # WebScrapper-for-Academic-Databases
 
+## Caution
+**PubMed** code is known to (partially) break, due to:
+- the new rate limit (with no api key it's 3 requests per sec): you will see error code 429 if you hit this
+- slight change of xml structure, e.g., no "DateCreated" node any more (in a quick experiment it works if replaced with searching for "DateCompleted" but needs more validation), addition of "ReferenceList" for some but not all articles with "ArticleId" attached that confuses our collection of the ArticleId of the original paper
+
+Currently I plan to fix it by the end of the month, if time permits. If anyone who uses this scrapper hits the issue and wants a quick fix, or if some other database breaks, feel free to send me a message (wanting.wang@columbia.edu).
+
 ## Intention
 Getting papers for meta analysis is always annoying: you need to try various combination of different keywords in various of databases, and it's very likely for you to come across with some paper you have met with in a previous database. Manually doing this is so inefficient.
 
