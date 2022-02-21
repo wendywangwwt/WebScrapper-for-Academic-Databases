@@ -1,7 +1,7 @@
 # WebScrapper-for-Academic-Databases
-A web scrapper for academic databases in R/Python in the form of a (set of) function. Initially, this was built for accelerating meta-data analysis where one intends to try various combination of different keywords in a handful of databases. Manually typing the keywords in different databases and eye-balling the resulted articles can be extremely inefficient and painful, especially when an article already seen from a previous database came up again in a new database.
+A web scrapper for academic databases in R/Python in the form of a (set of) function. Initially, this was built for accelerating meta-data analysis where one intends to try various combinations of different keywords in a handful of databases. Manually typing the keywords in each databases and eye-balling the resulting articles can be extremely inefficient and painful, especially when an article already seen from a previous database came up again in a new database.
 
-To address that, this web scrapper automatically
+To address this problem, this web scrapper automatically
 - generates query based on the provided keywords
 - parses the result page (xml in PubMed for example)
 - extracts the a group of information, including
@@ -18,7 +18,7 @@ To address that, this web scrapper automatically
 Supported databases as of 2022-02-20:
 - PubMed (`pubmed`)
 
-Databases that needs code update as of 2022-02-20:
+Databases that need code update as of 2022-02-20:
 - Sage Journal (`sage_journal`)
 - Science Direct (`science_direct`)
 - ProQuest (`proquest`)
@@ -60,7 +60,7 @@ df_data <- search_databases(keywords,relationship='and',field='all',database_nam
 ```
 
 #### param: no_duplicate
-Whether to drop duplicated results or not. Default to TRUE. Duplicated results come from searches across keywords (relationship='or'), and/or searches across databases. You may want to turn it off to better understand which database + search term combinations provide a duplicate. Higher number of duplicates could indicate higher relevancy of the article to the topic you intend to look into.
+Whether to drop duplicated results or not. Default to TRUE. Duplicated results come from searches across keywords (relationship='or'), and/or searches across databases. You may want to turn it off if you'd like to better understand which database + search term combinations bring a duplicate. Higher number of duplicates could indicate higher relevancy of the article to the topic you intend to look into.
 ```
 df_data <- search_databases(keywords,relationship='or',database_name=database_name,no_duplicate=F,limit_per_search=300)
 ```
@@ -68,7 +68,7 @@ df_data <- search_databases(keywords,relationship='or',database_name=database_na
 
 ## Caution
 To existing users, if there is any:  
-The code is re-factored and simplified to only do the job of database searching and data collection given ONE set of keywords (previously it was created with the assumption that TWO sets of keywords are needed, though you could skip one). Now if you have multiple sets of keywords, it will be up to you to loop through all combinations and call the function one at a time.
+The code is re-factored and simplified to only do the job of database searching and data collection given ONE set of keywords (previously it was created with the assumption that TWO sets of keywords are needed, though you could skip one). Now if you have multiple sets of keywords, you will need to implement the logic to loop through all combinations and call the `search_databases` function in the loop.
 
 
 
@@ -77,6 +77,6 @@ The code is re-factored and simplified to only do the job of database searching 
     
 ## Change log
 2022-02-20:
-- re-factored the code (not completely)
+- re-factored the code (not completely) and updated the readme file
 - only pubmed passed the tests, need to check and update the interaction with other databases later
 
