@@ -23,6 +23,10 @@ Databases that need code update as of 2022-02-20:
 - Science Direct (`science_direct`)
 - ProQuest (`proquest`)
 
+# Update
+**An R package based on this is under rapid development and more features are planned**, mainly because I need to use it again :) Once the package is in stable status, it will be uploaded to a different repository. Stay tuned!
+
+
 ## How to use
 #### param: keywords
 A string of keyword, or a vector of multiple keywords. Here is an example of multiple keywords:
