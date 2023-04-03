@@ -1,4 +1,7 @@
 # WebScrapper-for-Academic-Databases
+
+## All the relevant work has been moved to the new repository where the code is re-factored into an R package installable from GitHub ([AcademicDatabaseToolkit](https://github.com/wendywangwwt/AcademicDatabaseToolkit)). This repository is now completely deprecated.
+
 A web scrapper for academic databases in R/Python in the form of a (set of) function. Initially, this was built for accelerating meta-data analysis where one intends to try various combinations of different keywords in a handful of databases. Manually typing the keywords in each databases and eye-balling the resulting articles can be extremely inefficient and painful, especially when an article already seen from a previous database came up again in a new database.
 
 To address this problem, this web scrapper automatically
@@ -22,9 +25,6 @@ Databases that need code update as of 2022-02-20:
 - Sage Journal (`sage_journal`)
 - Science Direct (`science_direct`)
 - ProQuest (`proquest`)
-
-# Update
-**An R package based on this is under rapid development and more features are planned**, mainly because I need to use it again :) Once the package is in stable status, it will be uploaded to a different repository. Stay tuned!
 
 
 ## How to use
